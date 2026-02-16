@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
+import { EnvVarManager } from '@/components/EnvVarManager';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Key, Bell, Palette } from 'lucide-react';
+import { Save, Key, Bell, Palette, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 
 export const Settings: React.FC = () => {
@@ -49,10 +50,14 @@ export const Settings: React.FC = () => {
             </div>
 
             <Tabs defaultValue="api" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="api" className="gap-2">
                   <Key className="h-4 w-4" />
                   API
+                </TabsTrigger>
+                <TabsTrigger value="env-vars" className="gap-2">
+                  <Lock className="h-4 w-4" />
+                  Environment
                 </TabsTrigger>
                 <TabsTrigger value="notifications" className="gap-2">
                   <Bell className="h-4 w-4" />
@@ -111,6 +116,10 @@ export const Settings: React.FC = () => {
                     </Button>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="env-vars" className="space-y-6">
+                <EnvVarManager projectId="mock-project-id" />
               </TabsContent>
 
               <TabsContent value="notifications" className="space-y-6">

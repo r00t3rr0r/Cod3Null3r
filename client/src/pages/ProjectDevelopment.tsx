@@ -4,12 +4,18 @@ import { Sidebar } from '@/components/Sidebar';
 import { FileTree } from '@/components/FileTree';
 import { CodeEditor } from '@/components/CodeEditor';
 import { AgentActivityFeed } from '@/components/AgentActivityFeed';
+import { TasksOverview } from '@/components/TasksOverview';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Send, Loader } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Send, Loader, Bot } from 'lucide-react';
 import { getProjectFiles } from '@/api/codeFiles';
 import { getActivityFeed, sendAgentFeedback } from '@/api/agents';
+import { getAIModels, getProjectAIModel, setProjectAIModel } from '@/api/aiModels';
+import type { AIModel } from '@/api/aiModels';
 import { useToast } from '@/hooks/useToast';
 
 interface ProjectFile {
@@ -39,6 +45,9 @@ export const ProjectDevelopment: React.FC = () => {
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(true);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [aiModels, setAiModels] = useState<AIModel[]>([]);
+  const [selectedModel, setSelectedModel] = useState<string>('');
+  const [modelLoading, setModelLoading] = useState(false);
 
   const loadProjectData = async () => {
     try {
@@ -54,6 +63,7 @@ export const ProjectDevelopment: React.FC = () => {
       const activitiesResponse = await getActivityFeed(id);
       setActivities(activitiesResponse.activities);
     } catch (error) {
+      console.error('Failed to load project data:', error);
       toast({
         title: 'Error',
         description: 'Failed to load project data',
@@ -64,8 +74,22 @@ export const ProjectDevelopment: React.FC = () => {
     }
   };
 
+  const loadAIModels = async () => {
+    try {
+      const [modelsResponse, projectModelResponse] = await Promise.all([
+        getAIModels(),
+        id ? getProjectAIModel(id) : Promise.resolve({ modelId: 'claude-sonnet-3.5' }),
+      ]);
+      setAiModels(modelsResponse.models);
+      setSelectedModel(projectModelResponse.modelId);
+    } catch (error) {
+      console.error('Failed to load AI models:', error);
+    }
+  };
+
   useEffect(() => {
     loadProjectData();
+    loadAIModels();
     const interval = setInterval(loadProjectData, 3000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,13 +103,36 @@ export const ProjectDevelopment: React.FC = () => {
     }
   };
 
+  const handleModelChange = async (modelId: string) => {
+    if (!id) return;
+
+    try {
+      setModelLoading(true);
+      await setProjectAIModel(id, modelId);
+      setSelectedModel(modelId);
+      toast({
+        title: 'Success',
+        description: 'AI model updated successfully',
+      });
+    } catch (error) {
+      console.error('Failed to update AI model:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update AI model',
+        variant: 'destructive',
+      });
+    } finally {
+      setModelLoading(false);
+    }
+  };
+
   const handleSendFeedback = async () => {
     if (!feedback.trim()) return;
 
     try {
       setFeedbackLoading(true);
       await sendAgentFeedback({
-        projectId: id,
+        projectId: id || '',
         agentId: 'code-monkey',
         feedback,
       });
@@ -95,6 +142,7 @@ export const ProjectDevelopment: React.FC = () => {
         description: 'Feedback sent to agents',
       });
     } catch (error) {
+      console.error('Failed to send feedback:', error);
       toast({
         title: 'Error',
         description: 'Failed to send feedback',
@@ -143,23 +191,78 @@ export const ProjectDevelopment: React.FC = () => {
             />
           </div>
 
-          {/* Right Panel - Activity Feed & Feedback */}
+          {/* Right Panel - Activity, Tasks & Feedback */}
           <div className="w-96 flex flex-col gap-4 overflow-hidden">
+            {/* Tabs for Activity and Tasks */}
             <div className="flex-1 overflow-hidden">
-              <AgentActivityFeed activities={activities} />
+              <Tabs defaultValue="activity" className="h-full flex flex-col">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="activity">Activity</TabsTrigger>
+                  <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                </TabsList>
+                <TabsContent value="activity" className="flex-1 overflow-hidden mt-2">
+                  <AgentActivityFeed activities={activities} />
+                </TabsContent>
+                <TabsContent value="tasks" className="flex-1 overflow-hidden mt-2">
+                  {id && <TasksOverview projectId={id} />}
+                </TabsContent>
+              </Tabs>
             </div>
 
+            {/* AI Model Selection & Feedback */}
             <Card className="flex flex-col">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Provide Feedback</CardTitle>
+                <CardTitle className="text-lg">Agent Feedback</CardTitle>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col gap-3">
-                <Textarea
-                  placeholder="Tell agents what to improve or change..."
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                  className="flex-1 resize-none"
-                />
+                {/* AI Model Selection */}
+                <div className="space-y-2">
+                  <Label htmlFor="ai-model" className="text-sm flex items-center gap-2">
+                    <Bot className="h-4 w-4" />
+                    AI Model
+                  </Label>
+                  <Select
+                    value={selectedModel}
+                    onValueChange={handleModelChange}
+                    disabled={modelLoading}
+                  >
+                    <SelectTrigger id="ai-model">
+                      <SelectValue placeholder="Select AI model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {aiModels.map((model) => (
+                        <SelectItem key={model.id} value={model.id}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{model.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {model.provider} • {model.contextWindow.toLocaleString()} tokens
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedModel && (
+                    <p className="text-xs text-muted-foreground">
+                      {aiModels.find(m => m.id === selectedModel)?.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Feedback Textarea */}
+                <div className="space-y-2">
+                  <Label htmlFor="feedback" className="text-sm">
+                    Your Feedback
+                  </Label>
+                  <Textarea
+                    id="feedback"
+                    placeholder="Tell agents what to improve or change..."
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    className="resize-none h-24"
+                  />
+                </div>
+
                 <Button
                   onClick={handleSendFeedback}
                   disabled={feedbackLoading || !feedback.trim()}

@@ -16,8 +16,8 @@ export const Sidebar: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   const menuItems = [
-    { icon: Home, label: 'Dashboard', path: '/' },
-    { icon: LayoutGrid, label: 'Projects', path: '/' },
+    { icon: Home, label: 'Dashboard', path: '/', id: 'dashboard' },
+    { icon: LayoutGrid, label: 'Projects', path: '/', id: 'projects' },
   ];
 
   return (
@@ -51,7 +51,7 @@ export const Sidebar: React.FC = () => {
           <p className="text-xs font-semibold text-slate-400 px-2 py-2">NAVIGATION</p>
           {menuItems.map((item) => (
             <Button
-              key={item.path}
+              key={item.id}
               variant={isActive(item.path) ? 'default' : 'ghost'}
               className="w-full justify-start gap-2"
               onClick={() => navigate(item.path)}
