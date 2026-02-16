@@ -5,6 +5,7 @@ import { FileTree } from '@/components/FileTree';
 import { CodeEditor } from '@/components/CodeEditor';
 import { AgentActivityFeed } from '@/components/AgentActivityFeed';
 import { TasksOverview } from '@/components/TasksOverview';
+import { FeedbackAnalysisDialog } from '@/components/FeedbackAnalysisDialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +16,9 @@ import { Send, Loader, Bot } from 'lucide-react';
 import { getProjectFiles } from '@/api/codeFiles';
 import { getActivityFeed, sendAgentFeedback } from '@/api/agents';
 import { getAIModels, getProjectAIModel, setProjectAIModel } from '@/api/aiModels';
+import { analyzeFeedback } from '@/api/feedbackAnalysis';
 import type { AIModel } from '@/api/aiModels';
+import type { FeedbackSummary, ImplementationPlan } from '@/api/feedbackAnalysis';
 import { useToast } from '@/hooks/useToast';
 
 interface ProjectFile {
@@ -48,6 +51,11 @@ export const ProjectDevelopment: React.FC = () => {
   const [aiModels, setAiModels] = useState<AIModel[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [modelLoading, setModelLoading] = useState(false);
+  const [analysisDialogOpen, setAnalysisDialogOpen] = useState(false);
+  const [feedbackSummary, setFeedbackSummary] = useState<FeedbackSummary | null>(null);
+  const [implementationPlan, setImplementationPlan] = useState<ImplementationPlan | null>(null);
+  const [analyzingFeedback, setAnalyzingFeedback] = useState(false);
+  const [pendingFeedback, setPendingFeedback] = useState('');
 
   const loadProjectData = async () => {
     try {
@@ -130,27 +138,70 @@ export const ProjectDevelopment: React.FC = () => {
     if (!feedback.trim()) return;
 
     try {
+      setAnalyzingFeedback(true);
+      setPendingFeedback(feedback);
+
+      // Analyze the feedback
+      console.log('Analyzing feedback:', feedback);
+      const analysis = await analyzeFeedback(feedback, id || '');
+
+      setFeedbackSummary(analysis.summary);
+      setImplementationPlan(analysis.implementationPlan);
+      setAnalysisDialogOpen(true);
+
+      console.log('Feedback analysis completed successfully');
+    } catch (error) {
+      console.error('Failed to analyze feedback:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to analyze feedback. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setAnalyzingFeedback(false);
+    }
+  };
+
+  const handleConfirmFeedback = async () => {
+    try {
       setFeedbackLoading(true);
+      console.log('Proceeding with implementation of feedback');
+
       await sendAgentFeedback({
         projectId: id || '',
         agentId: 'code-monkey',
-        feedback,
+        feedback: pendingFeedback,
       });
+
       setFeedback('');
+      setPendingFeedback('');
+      setFeedbackSummary(null);
+      setImplementationPlan(null);
+
       toast({
         title: 'Success',
-        description: 'Feedback sent to agents',
+        description: 'Feedback sent to agents. Implementation is starting...',
       });
+
+      console.log('Feedback submitted to agents successfully');
     } catch (error) {
       console.error('Failed to send feedback:', error);
       toast({
         title: 'Error',
-        description: 'Failed to send feedback',
+        description: 'Failed to send feedback to agents',
         variant: 'destructive',
       });
     } finally {
       setFeedbackLoading(false);
     }
+  };
+
+  const handleCancelFeedback = () => {
+    console.log('User cancelled feedback implementation');
+    setFeedbackSummary(null);
+    setImplementationPlan(null);
+    setPendingFeedback('');
+    // Keep the feedback in the textarea for user to edit
   };
 
   if (loading) {
@@ -265,13 +316,13 @@ export const ProjectDevelopment: React.FC = () => {
 
                 <Button
                   onClick={handleSendFeedback}
-                  disabled={feedbackLoading || !feedback.trim()}
+                  disabled={feedbackLoading || analyzingFeedback || !feedback.trim()}
                   className="gap-2 bg-gradient-to-r from-blue-500 to-purple-600"
                 >
-                  {feedbackLoading ? (
+                  {feedbackLoading || analyzingFeedback ? (
                     <>
                       <Loader className="h-4 w-4 animate-spin" />
-                      Sending...
+                      {analyzingFeedback ? 'Analyzing...' : 'Sending...'}
                     </>
                   ) : (
                     <>
@@ -285,6 +336,17 @@ export const ProjectDevelopment: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Feedback Analysis Dialog */}
+      <FeedbackAnalysisDialog
+        open={analysisDialogOpen}
+        onOpenChange={setAnalysisDialogOpen}
+        summary={feedbackSummary}
+        implementationPlan={implementationPlan}
+        isLoading={analyzingFeedback}
+        onConfirm={handleConfirmFeedback}
+        onCancel={handleCancelFeedback}
+      />
     </div>
   );
 };
