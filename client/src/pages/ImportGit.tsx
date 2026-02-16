@@ -13,12 +13,26 @@ import { useToast } from '@/hooks/useToast';
 
 type Step = 'input' | 'analyzing' | 'review' | 'improvements';
 
+interface GitAnalysis {
+  name: string;
+  url: string;
+  description: string;
+  filesCount: number;
+  linesOfCode: number;
+  technologies: string[];
+  issues: Array<{
+    severity: string;
+    description: string;
+    location: string;
+  }>;
+}
+
 export const ImportGit: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState<Step>('input');
   const [repositoryUrl, setRepositoryUrl] = useState('');
-  const [analysis, setAnalysis] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<GitAnalysis | null>(null);
   const [improvements, setImprovements] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -198,7 +212,7 @@ export const ImportGit: React.FC = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                      {analysis.issues.map((issue: any, index: number) => (
+                      {analysis.issues.map((issue, index: number) => (
                         <Alert key={index} className="border-l-4 border-red-600">
                           <AlertDescription>
                             <p className="font-medium">{issue.description}</p>

@@ -1,5 +1,25 @@
 import api from './api';
 
+export interface Requirement {
+  id: string;
+  category: string;
+  description: string;
+  priority: string;
+}
+
+export interface TechStack {
+  frontend: string[];
+  backend: string[];
+  database: string[];
+  tools: string[];
+}
+
+export interface RoadmapPhase {
+  phase: string;
+  tasks: string[];
+  estimatedDays: number;
+}
+
 // Description: Get clarification questions for app creation
 // Endpoint: GET /api/app-creation/questions
 // Request: { description: string }
@@ -64,7 +84,7 @@ export const getClarificationQuestions = (description: string) => {
 // Endpoint: POST /api/app-creation/tech-stack
 // Request: { requirements: Array<Requirement> }
 // Response: { techStack: TechStack, explanation: string }
-export const getTechStackRecommendation = (requirements: any[]) => {
+export const getTechStackRecommendation = (requirements: Requirement[]) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
@@ -91,7 +111,7 @@ export const getTechStackRecommendation = (requirements: any[]) => {
 // Endpoint: POST /api/app-creation/roadmap
 // Request: { requirements: Array<Requirement>, techStack: TechStack }
 // Response: { roadmap: Array<{ phase: string, tasks: string[], estimatedDays: number }> }
-export const getDevelopmentRoadmap = (requirements: any[], techStack: any) => {
+export const getDevelopmentRoadmap = (requirements: Requirement[], techStack: TechStack) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
@@ -138,7 +158,13 @@ export const getDevelopmentRoadmap = (requirements: any[], techStack: any) => {
 // Endpoint: POST /api/app-creation/start
 // Request: { projectName: string, requirements: Array<Requirement>, techStack: TechStack }
 // Response: { success: boolean, projectId: string }
-export const startCodeGeneration = (data: any) => {
+interface StartCodeGenerationRequest {
+  projectName: string;
+  requirements: Requirement[];
+  techStack: TechStack;
+}
+
+export const startCodeGeneration = (data: StartCodeGenerationRequest) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({

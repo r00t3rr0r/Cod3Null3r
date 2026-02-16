@@ -49,7 +49,12 @@ export const analyzeGitRepository = (repositoryUrl: string) => {
 // Endpoint: POST /api/git/rework
 // Request: { repositoryUrl: string, improvements: string }
 // Response: { success: boolean, projectId: string }
-export const startGitRework = (data: any) => {
+interface GitReworkData {
+  repositoryUrl: string;
+  improvements: string;
+}
+
+export const startGitRework = (data: GitReworkData) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({

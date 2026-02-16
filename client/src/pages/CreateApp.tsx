@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { ArrowRight, ArrowLeft, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getClarificationQuestions, getTechStackRecommendation, getDevelopmentRoadmap, startCodeGeneration } from '@/api/appCreation';
+import type { Requirement, TechStack, RoadmapPhase } from '@/api/appCreation';
 import { useToast } from '@/hooks/useToast';
 
 type Step = 'description' | 'clarification' | 'summary' | 'architecture' | 'generation';
@@ -27,9 +28,9 @@ export const CreateApp: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
-  const [requirements, setRequirements] = useState<any[]>([]);
-  const [techStack, setTechStack] = useState<any>(null);
-  const [roadmap, setRoadmap] = useState<any[]>([]);
+  const [requirements, setRequirements] = useState<Requirement[]>([]);
+  const [techStack, setTechStack] = useState<TechStack | null>(null);
+  const [roadmap, setRoadmap] = useState<RoadmapPhase[]>([]);
   const [loading, setLoading] = useState(false);
   const [projectName, setProjectName] = useState('');
 

@@ -11,8 +11,19 @@ import {
 } from './ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
 
+export interface Project {
+  _id: string;
+  name: string;
+  description: string;
+  filesCount: number;
+  linesOfCode: number;
+  technologies: string[];
+  status: string;
+  lastModified: string;
+}
+
 interface ProjectCardProps {
-  project: any;
+  project: Project;
   onDelete?: (id: string) => void;
   onDuplicate?: (id: string) => void;
 }

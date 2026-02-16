@@ -13,41 +13,21 @@ import {
 import { Search, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getProjects, deleteProject, duplicateProject } from '@/api/projects';
+import type { Project } from '@/components/ProjectCard';
 import { useToast } from '@/hooks/useToast';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [projects, setProjects] = useState<any[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadProjects();
-  }, []);
-
-  const loadProjects = async () => {
-    try {
-      setLoading(true);
-      const response = await getProjects();
-      setProjects(response.projects);
-      filterAndSortProjects(response.projects, searchTerm, statusFilter, sortBy);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to load projects',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const filterAndSortProjects = (
-    items: any[],
+    items: Project[],
     search: string,
     status: string,
     sort: string
@@ -82,6 +62,28 @@ export const Dashboard: React.FC = () => {
 
     setFilteredProjects(filtered);
   };
+
+  const loadProjects = async () => {
+    try {
+      setLoading(true);
+      const response = await getProjects();
+      setProjects(response.projects);
+      filterAndSortProjects(response.projects, searchTerm, statusFilter, sortBy);
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load projects',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);

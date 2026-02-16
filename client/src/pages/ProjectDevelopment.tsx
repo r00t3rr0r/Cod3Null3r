@@ -12,22 +12,33 @@ import { getProjectFiles } from '@/api/codeFiles';
 import { getActivityFeed, sendAgentFeedback } from '@/api/agents';
 import { useToast } from '@/hooks/useToast';
 
+interface ProjectFile {
+  path: string;
+  content: string;
+  language?: string;
+}
+
+interface ProjectActivity {
+  id: string;
+  agentId: string;
+  agentName: string;
+  task: string;
+  status: string;
+  filesModified: string[];
+  timeSpent: number;
+  timestamp: string;
+}
+
 export const ProjectDevelopment: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  const [files, setFiles] = useState<any[]>([]);
+  const [files, setFiles] = useState<ProjectFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<string>('');
   const [selectedFileContent, setSelectedFileContent] = useState<string>('');
-  const [activities, setActivities] = useState<any[]>([]);
+  const [activities, setActivities] = useState<ProjectActivity[]>([]);
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(true);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
-
-  useEffect(() => {
-    loadProjectData();
-    const interval = setInterval(loadProjectData, 3000);
-    return () => clearInterval(interval);
-  }, [id]);
 
   const loadProjectData = async () => {
     try {
@@ -52,6 +63,13 @@ export const ProjectDevelopment: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadProjectData();
+    const interval = setInterval(loadProjectData, 3000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleFileSelect = (path: string) => {
     const file = files.find((f) => f.path === path);

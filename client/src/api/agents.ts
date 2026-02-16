@@ -126,7 +126,13 @@ export const getActivityFeed = (projectId: string) => {
 // Endpoint: POST /api/agents/feedback
 // Request: { projectId: string, agentId: string, feedback: string }
 // Response: { success: boolean }
-export const sendAgentFeedback = (data: any) => {
+interface FeedbackData {
+  projectId: string;
+  agentId: string;
+  feedback: string;
+}
+
+export const sendAgentFeedback = (data: FeedbackData) => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({ success: true });

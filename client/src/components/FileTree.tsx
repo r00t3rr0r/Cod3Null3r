@@ -12,8 +12,13 @@ interface FileNode {
   language?: string;
 }
 
+interface FileItem {
+  path: string;
+  language?: string;
+}
+
 interface FileTreeProps {
-  files: any[];
+  files: FileItem[];
   onFileSelect?: (path: string) => void;
   selectedFile?: string;
 }
@@ -22,7 +27,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ files, onFileSelect, selecte
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
 
-  const buildFileTree = (files: any[]): FileNode[] => {
+  const buildFileTree = (files: FileItem[]): FileNode[] => {
     const tree: { [key: string]: FileNode } = {};
 
     files.forEach((file) => {
@@ -41,7 +46,7 @@ export const FileTree: React.FC<FileTreeProps> = ({ files, onFileSelect, selecte
           };
         }
         if (current[part].children) {
-          current = current[part].children as any;
+          current = (current[part].children as FileNode[]);
         }
       });
     });
