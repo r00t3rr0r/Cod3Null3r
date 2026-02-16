@@ -10,7 +10,7 @@ export interface IUser extends Document {
   lastLoginAt: Date;
   isActive: boolean;
   role: RoleValues;
-  refreshToken: string;
+  refreshToken: string | null;
   oauthProvider?: string;
   oauthId?: string;
 }
@@ -75,7 +75,7 @@ const schema = new Schema<IUser>({
 });
 
 schema.set('toJSON', {
-  transform: (doc: Document, ret: Record<string, unknown>) => {
+  transform: (_doc: unknown, ret: { password?: string }) => {
     delete ret.password;
     return ret;
   },
