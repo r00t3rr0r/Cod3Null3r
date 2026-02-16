@@ -3,7 +3,7 @@ import express from 'express';
 import { Request, Response } from 'express';
 import UserService from '../services/userService';
 import { requireUser } from './middlewares/auth';
-import User from '../models/User';
+import User, { IUser } from '../models/User';
 import { generateAccessToken, generateRefreshToken } from '../utils/auth';
 import jwt from 'jsonwebtoken';
 import { ALL_ROLES } from 'shared';
@@ -32,7 +32,7 @@ interface AuthConfigResponse {
   };
 }
 
-async function generateTokensAndReturnUser(user: User) {
+async function generateTokensAndReturnUser(user: IUser) {
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 
@@ -167,7 +167,8 @@ if (AUTH_STRATEGY === 'email') {
       const response = await generateTokensAndReturnUser(user);
       return res.json(response);
     } catch (error: unknown) {
-      return res.status(400).json({ message: error.message || 'Authentication failed' });
+      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+      return res.status(400).json({ message: errorMessage });
     }
   });
 
@@ -180,8 +181,9 @@ if (AUTH_STRATEGY === 'email') {
       const response = await generateTokensAndReturnUser(user);
       return res.status(200).json(response);
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
       console.error(`Error while registering user: ${error}`);
-      return res.status(400).json({ message: error.message || 'Registration failed' });
+      return res.status(400).json({ message: errorMessage });
     }
   });
 }
@@ -202,7 +204,8 @@ router.post('/logout', requireUser(ALL_ROLES), async (req: AuthRequest, res: Res
 
     return res.status(200).json({ message: 'User logged out successfully.' });
   } catch (error: unknown) {
-    return res.status(400).json({ message: error.message || 'Logout failed' });
+    const errorMessage = error instanceof Error ? error.message : 'Logout failed';
+    return res.status(400).json({ message: errorMessage });
   }
 });
 
@@ -219,7 +222,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
   try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!) as jwt.JwtPayload;
 
-    const user = await UserService.get(decoded.sub);
+    const user = await UserService.get(decoded.sub!);
 
     if (!user) {
       return res.status(403).json({

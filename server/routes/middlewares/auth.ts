@@ -14,7 +14,7 @@ const requireUser = (allowedRoles: string[] = ALL_ROLES) => {
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload;
-      const user = await UserService.get(decoded.sub);
+      const user = await UserService.get(decoded.sub!);
       if (!user) {
         return res.status(401).json({ error: 'User not found' });
       }
@@ -26,7 +26,7 @@ const requireUser = (allowedRoles: string[] = ALL_ROLES) => {
         }
       }
 
-      req.user = user;
+      req.user = user.toObject() as Record<string, unknown>;
       next();
     } catch {
       return res.status(403).json({ error: 'Invalid or expired token' });
