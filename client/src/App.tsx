@@ -5,7 +5,11 @@ import { AuthProvider } from "./contexts/AuthContext"
 import { Login } from "./pages/Login"
 import { Register } from "./pages/Register"
 import { ProtectedRoute } from "./components/ProtectedRoute"
-import { Layout } from "./components/Layout"
+import { Dashboard } from "./pages/Dashboard"
+import { CreateApp } from "./pages/CreateApp"
+import { ImportGit } from "./pages/ImportGit"
+import { ProjectDevelopment } from "./pages/ProjectDevelopment"
+import { Settings } from "./pages/Settings"
 import { BlankPage } from "./pages/BlankPage"
 
 function App() {
@@ -16,7 +20,11 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/" element={<ProtectedRoute> <Layout /> </ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/create" element={<ProtectedRoute><CreateApp /></ProtectedRoute>} />
+          <Route path="/import" element={<ProtectedRoute><ImportGit /></ProtectedRoute>} />
+          <Route path="/project/:id" element={<ProtectedRoute><ProjectDevelopment /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="*" element={<BlankPage />} />
         </Routes>
       </Router>
