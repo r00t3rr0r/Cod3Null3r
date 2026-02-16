@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { EnvVarManager } from '@/components/EnvVarManager';
+import { LLMConfigManager } from '@/components/LLMConfigManager';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Save, Key, Bell, Palette, Lock } from 'lucide-react';
+import { Save, Key, Bell, Palette, Lock, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 
 export const Settings: React.FC = () => {
@@ -50,10 +51,14 @@ export const Settings: React.FC = () => {
             </div>
 
             <Tabs defaultValue="api" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="api" className="gap-2">
                   <Key className="h-4 w-4" />
                   API
+                </TabsTrigger>
+                <TabsTrigger value="llm" className="gap-2">
+                  <Zap className="h-4 w-4" />
+                  LLM Config
                 </TabsTrigger>
                 <TabsTrigger value="env-vars" className="gap-2">
                   <Lock className="h-4 w-4" />
@@ -73,7 +78,7 @@ export const Settings: React.FC = () => {
               <TabsContent value="api" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>LLM Configuration</CardTitle>
+                    <CardTitle>Basic API Configuration</CardTitle>
                     <CardDescription>
                       Configure your AI model settings
                     </CardDescription>
@@ -116,6 +121,10 @@ export const Settings: React.FC = () => {
                     </Button>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="llm" className="space-y-6">
+                <LLMConfigManager />
               </TabsContent>
 
               <TabsContent value="env-vars" className="space-y-6">
