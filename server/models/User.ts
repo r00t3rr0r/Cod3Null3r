@@ -75,7 +75,7 @@ const schema = new Schema<IUser>({
 });
 
 schema.set('toJSON', {
-  transform: (_doc: unknown, ret: { password?: string }) => {
+  transform: (_doc: unknown, ret: { password?: string | null }) => {
     delete ret.password;
     return ret;
   },

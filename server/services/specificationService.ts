@@ -1,5 +1,4 @@
 import Specification, { ISpecification } from '../models/Specification';
-import mongoose from 'mongoose';
 
 class SpecificationService {
   async create(specData: Partial<ISpecification>): Promise<ISpecification> {

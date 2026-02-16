@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import { requireUser } from './middlewares/auth';
 import { ALL_ROLES } from 'shared';
 import ProjectService from '../services/projectService';
-import mongoose from 'mongoose';
+import { Types } from 'mongoose';
 
 const router = express.Router();
 
@@ -103,7 +103,7 @@ router.post('/', requireUser(ALL_ROLES), async (req: AuthRequest, res: Response)
     const project = await ProjectService.create({
       name,
       description,
-      owner: new mongoose.Types.ObjectId(userId),
+      owner: new Types.ObjectId(userId),
       type: type || 'new',
       technologies: technologies || []
     });

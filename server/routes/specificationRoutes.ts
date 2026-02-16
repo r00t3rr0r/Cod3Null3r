@@ -2,8 +2,9 @@ import express, { Request, Response } from 'express';
 import { requireUser } from './middlewares/auth';
 import { ALL_ROLES } from 'shared';
 import SpecificationService from '../services/specificationService';
+import { ISpecification } from '../models/Specification';
 import ProjectService from '../services/projectService';
-import mongoose from 'mongoose';
+import { Types } from 'mongoose';
 
 const router = express.Router();
 
@@ -31,7 +32,7 @@ router.post('/generate', requireUser(ALL_ROLES), async (req: AuthRequest, res: R
 
     // Create a comprehensive specification based on the input
     const specification = await SpecificationService.create({
-      project: projectId ? new mongoose.Types.ObjectId(projectId) : new mongoose.Types.ObjectId(),
+      project: projectId ? new Types.ObjectId(projectId) : new Types.ObjectId(),
       projectName,
       projectDescription: description,
       targetAudience: 'General users',
